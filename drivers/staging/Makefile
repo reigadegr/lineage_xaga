@@ -52,3 +52,4 @@ obj-y				+= hikey9xx/
 
 # MIUI ADD: Performance_UnfairMem
 obj-$(CONFIG_MI_MEM_ENGINE)        += mi_mem_engine/
+obj-$(CONFIG_BINDER_PRIO)	+= binder_prio/
