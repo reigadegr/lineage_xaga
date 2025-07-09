@@ -3978,6 +3978,26 @@ static int unknown_module_param_cb(char *param, char *val, const char *modname,
 
 static void cfi_init(struct module *mod);
 
+static const char *blocked_modules_dev[] = {
+    "atf_logger",
+    "cmdq_test",
+    "cpuqos_v3",
+    "frs",
+    "gz_log_mod",
+    "iommu_test",
+    "mtk_cpu_power_throttling",
+    "mtk_heap_debug",
+    "mtk_md_power_throttling",
+    "mtk_ssc_dbg_v2",
+    "mtk_vmm_dbg",
+    "trace_mmstat",
+    NULL
+};
+
+static const char *blocked_modules_stable[] = {
+    NULL
+};
+
 /* Allocate and load the module: note that size of section 0 is always
    zero, and we rely on this for optional sections. */
 static int load_module(struct load_info *info, const char __user *uargs,
@@ -3986,6 +4006,7 @@ static int load_module(struct load_info *info, const char __user *uargs,
 	struct module *mod;
 	long err = 0;
 	char *after_dashes;
+	int i = 0;
 
 	/*
 	 * Do the signature check (if any) first. All that
@@ -4025,6 +4046,20 @@ static int load_module(struct load_info *info, const char __user *uargs,
 	 * Now that we know we have the correct module name, check
 	 * if it's blacklisted.
 	 */
+    for (i = 0; blocked_modules_dev[i] != NULL; i++) {
+        if (strcmp(info->name, blocked_modules_dev[i]) == 0) {
+            pr_warn("Dev: Module %s is blacklisted\n", info->name);
+            goto free_copy;
+        }
+    }
+
+    for (i = 0; blocked_modules_stable[i] != NULL; i++) {
+        if (strcmp(info->name, blocked_modules_stable[i]) == 0) {
+            pr_warn("Stable: Module %s is blacklisted\n", info->name);
+            goto free_copy;
+        }
+    }
+
 	if (blacklisted(info->name)) {
 		err = -EPERM;
 		pr_err("Module %s is blacklisted\n", info->name);
