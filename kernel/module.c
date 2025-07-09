@@ -3979,6 +3979,10 @@ static int unknown_module_param_cb(char *param, char *val, const char *modname,
 static void cfi_init(struct module *mod);
 
 static const char *blocked_modules_dev[] = {
+    NULL
+};
+
+static const char *blocked_modules_stable[] = {
     "atf_logger",
     "cmdq_test",
     "cpuqos_v3",
@@ -3991,10 +3995,6 @@ static const char *blocked_modules_dev[] = {
     "mtk_ssc_dbg_v2",
     "mtk_vmm_dbg",
     "trace_mmstat",
-    NULL
-};
-
-static const char *blocked_modules_stable[] = {
     NULL
 };
 
