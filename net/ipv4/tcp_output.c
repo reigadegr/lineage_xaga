@@ -1536,7 +1536,7 @@ int tcp_fragment(struct sock *sk, enum tcp_queue tcp_queue,
 {
 	struct tcp_sock *tp = tcp_sk(sk);
 	struct sk_buff *buff;
-	int nsize, old_factor;
+    int nsize, old_factor, inflight_prev
 	long limit;
 	int nlen;
 	u8 flags;
