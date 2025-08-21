@@ -184,6 +184,12 @@ void blk_stat_free_callback(struct blk_stat_callback *cb)
 		call_rcu(&cb->rcu, blk_stat_free_callback_rcu);
 }
 
+void blk_stat_disable_accounting(struct request_queue *q)
+{
+	blk_queue_flag_clear(QUEUE_FLAG_STATS, q);
+}
+EXPORT_SYMBOL_GPL(blk_stat_disable_accounting);
+
 void blk_stat_enable_accounting(struct request_queue *q)
 {
 	unsigned long flags;

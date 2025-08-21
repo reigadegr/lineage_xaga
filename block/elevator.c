@@ -628,7 +628,11 @@ static struct elevator_type *elevator_get_default(struct request_queue *q)
 	if (q->nr_hw_queues != 1)
 		return NULL;
 
+#ifdef CONFIG_MQ_IOSCHED_DEFAULT_ADIOS
+	return elevator_get(q, "adios", false);
+#else // !CONFIG_MQ_IOSCHED_DEFAULT_ADIOS
 	return elevator_get(q, "mq-deadline", false);
+#endif // CONFIG_MQ_IOSCHED_DEFAULT_ADIOS
 }
 
 /*
