@@ -49,3 +49,6 @@ obj-$(CONFIG_KPC2000)		+= kpc2000/
 obj-$(CONFIG_QLGE)		+= qlge/
 obj-$(CONFIG_WFX)		+= wfx/
 obj-y				+= hikey9xx/
+
+# MIUI ADD: Performance_UnfairMem
+obj-$(CONFIG_MI_MEM_ENGINE)        += mi_mem_engine/
