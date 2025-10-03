@@ -403,6 +403,9 @@ DECLARE_HOOK(android_vh_uprobes_replace_page,
 DECLARE_HOOK(android_vh_shmem_swapin_page,
 	TP_PROTO(struct page *page),
 	TP_ARGS(page));
+DECLARE_HOOK(android_vh_get_page_wmark,
+	TP_PROTO(unsigned int alloc_flags, unsigned long *page_wmark),
+	TP_ARGS(alloc_flags, page_wmark));
 #endif /* _TRACE_HOOK_MM_H */
 
 /* This part must be outside protection */
