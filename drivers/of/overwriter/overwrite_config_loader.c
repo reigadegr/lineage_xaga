@@ -62,7 +62,7 @@ static int parse_numbers(const char *value_str, u8 **out_buf, size_t *out_len)
     p = dup;
     token_start = NULL;
     in_token = false;
-    
+
     while (*p && i < count) {
         if (*p != ' ' && *p != '\t' && *p != '\n') {
             if (!in_token) {
@@ -73,15 +73,15 @@ static int parse_numbers(const char *value_str, u8 **out_buf, size_t *out_len)
             if (in_token) {
                 /* End of token, null-terminate and parse */
                 *p = '\0';
-                
+
                 // pr_info("parse_numbers: parsing token '%s'\n", token_start);
-                
+
                 if (strncmp(token_start, "0x", 2) == 0 || strncmp(token_start, "0X", 2) == 0) {
                     val = simple_strtoul(token_start, &endptr, 16);
                 } else {
                     val = simple_strtoul(token_start, &endptr, 10);
                 }
-                
+
                 // 修改最大值检查，允许32位值
                 if (endptr == token_start || *endptr != '\0' || val > 0xFFFFFFFFUL) {
                     pr_err("parse_numbers: invalid number '%s' (must be <= 0xFFFFFFFF)\n", token_start);
@@ -89,7 +89,7 @@ static int parse_numbers(const char *value_str, u8 **out_buf, size_t *out_len)
                     kfree(dup);
                     return -EINVAL;
                 }
-                
+
                 // 将值转换为4字节大端格式
                 buf[i * 4 + 0] = (u8)((val >> 24) & 0xFF); // Highest byte
                 buf[i * 4 + 1] = (u8)((val >> 16) & 0xFF); // High byte
@@ -102,17 +102,17 @@ static int parse_numbers(const char *value_str, u8 **out_buf, size_t *out_len)
         }
         p++;
     }
-    
+
     /* Handle last token if string doesn't end with whitespace */
     if (in_token && token_start && i < count) {
         // pr_info("parse_numbers: parsing final token '%s'\n", token_start);
-        
+
         if (strncmp(token_start, "0x", 2) == 0 || strncmp(token_start, "0X", 2) == 0) {
             val = simple_strtoul(token_start, &endptr, 16);
         } else {
             val = simple_strtoul(token_start, &endptr, 10);
         }
-        
+
         // 修改最大值检查，允许32位值
         if (endptr == token_start || *endptr != '\0' || val > 0xFFFFFFFFUL) {
             pr_err("parse_numbers: invalid number '%s' (must be <= 0xFFFFFFFF)\n", token_start);
@@ -120,13 +120,13 @@ static int parse_numbers(const char *value_str, u8 **out_buf, size_t *out_len)
             kfree(dup);
             return -EINVAL;
         }
-        
+
         // 将值转换为4字节大端格式
         buf[i * 4 + 0] = (u8)((val >> 24) & 0xFF); // Highest byte
         buf[i * 4 + 1] = (u8)((val >> 16) & 0xFF); // High byte
         buf[i * 4 + 2] = (u8)((val >> 8) & 0xFF);  // Low byte
         buf[i * 4 + 3] = (u8)(val & 0xFF);         // Lowest byte
-        
+
         // pr_info("parse_numbers: parsed final value[%zu] = 0x%08lx -> [0x%02x, 0x%02x, 0x%02x, 0x%02x]\n", i, val, buf[i * 4 + 0], buf[i * 4 + 1], buf[i * 4 + 2], buf[i * 4 + 3]);
         i++;
     }
@@ -134,7 +134,7 @@ static int parse_numbers(const char *value_str, u8 **out_buf, size_t *out_len)
     *out_buf = buf;
     *out_len = i * 4;  /* Total length is number of values times 4 bytes */
     kfree(dup);
-    
+
     // pr_info("parse_numbers: successfully parsed %zu values (%zu bytes)\n", i, *out_len);
     return 0;
 }
@@ -156,22 +156,22 @@ static bool is_numeric_value(const char *value)
 {
     const char *p = value;
     bool has_non_space = false;
-    
+
     /* Skip leading whitespace */
     while (*p && (*p == ' ' || *p == '\t' || *p == '\n'))
         p++;
-    
+
     /* Check each token */
     while (*p) {
         /* Skip whitespace between tokens */
         while (*p && (*p == ' ' || *p == '\t' || *p == '\n'))
             p++;
-        
+
         if (!*p)
             break;
-        
+
         has_non_space = true;
-        
+
         /* Check if token looks like a number */
         if (strncmp(p, "0x", 2) == 0 || strncmp(p, "0X", 2) == 0) {
             /* Hex number */
@@ -188,12 +188,12 @@ static bool is_numeric_value(const char *value)
             /* Not a number */
             return false;
         }
-        
+
         /* Should be end of string or whitespace */
         if (*p && *p != ' ' && *p != '\t' && *p != '\n')
             return false;
     }
-    
+
     return has_non_space;
 }
 
@@ -223,10 +223,10 @@ static int __init remove_dt_node(const char *path)
 
     /* Find and unlink the node from parent's child list */
     raw_spin_lock_irqsave(&devtree_lock, flags);
-    
+
     child = parent->child;
     prev_child = NULL;
-    
+
     while (child) {
         if (child == np) {
             /* Found the node to remove */
@@ -235,20 +235,20 @@ static int __init remove_dt_node(const char *path)
             } else {
                 parent->child = child->sibling;
             }
-            
+
             /* Clear the node's parent and sibling pointers */
             child->parent = NULL;
             child->sibling = NULL;
-            
+
             // pr_info("%s: Successfully removed node: '%s'\n", PATCH_TAG, path);
             break;
         }
         prev_child = child;
         child = child->sibling;
     }
-    
+
     raw_spin_unlock_irqrestore(&devtree_lock, flags);
-    
+
     of_node_put(parent);
     of_node_put(np);
     return ret;
@@ -273,10 +273,10 @@ static int __init remove_dt_property(const char *path, const char *prop_name)
 
     /* Find and unlink the property from the node's property list */
     raw_spin_lock_irqsave(&devtree_lock, flags);
-    
+
     prop = np->properties;
     prev_prop = NULL;
-    
+
     while (prop) {
         if (strcmp(prop->name, prop_name) == 0) {
             /* Found the property to remove */
@@ -285,10 +285,10 @@ static int __init remove_dt_property(const char *path, const char *prop_name)
             } else {
                 np->properties = prop->next;
             }
-            
+
             /* Clear the property's next pointer */
             prop->next = NULL;
-            
+
             // pr_info("%s: Successfully removed property '%s' from node '%s'\n", PATCH_TAG, prop_name, path);
             ret = 0;
             break;
@@ -296,14 +296,14 @@ static int __init remove_dt_property(const char *path, const char *prop_name)
         prev_prop = prop;
         prop = prop->next;
     }
-    
+
     if (!prop) {
         pr_err("%s: Property '%s' not found in node '%s'\n", PATCH_TAG, prop_name, path);
         ret = -EINVAL;
     }
-    
+
     raw_spin_unlock_irqrestore(&devtree_lock, flags);
-    
+
     of_node_put(np);
     return ret;
 }
@@ -430,7 +430,7 @@ static int parse_hex_bytes(const char *value_str, u8 **out_buf, size_t *out_len)
             // 找到一个十六进制字符，假设这是一个字节的开始
             count++;
             // 跳过当前字节的两个十六进制字符和可能的空格
-            p++; 
+            p++;
             if (is_hex_digit(*p)) p++;
             while (*p && (*p == ' ' || *p == '\t' || *p == '\n')) p++;
         } else if (*p == ' ' || *p == '\t' || *p == '\n') {
@@ -488,7 +488,7 @@ static int parse_hex_bytes(const char *value_str, u8 **out_buf, size_t *out_len)
             kfree(dup);
             return -EINVAL;
         }
-        
+
         buf[i++] = (u8)val;
     }
 
@@ -659,7 +659,7 @@ static int __init patch_device_tree(const char *input)
         op_input = dup + 1;
         while (*op_input && (*op_input == ' ' || *op_input == '\t'))
             op_input++;
-        
+
         if (operation == 'r') {
             /* Remove node: "r /path/to/node" */
             ret = remove_dt_node(op_input);
@@ -673,17 +673,17 @@ static int __init patch_device_tree(const char *input)
                 kfree(dup);
                 return -EINVAL;
             }
-            
+
             *last_slash = '\0';
             path = op_input;
             prop_name = last_slash + 1;
-            
+
             while (*prop_name && (*prop_name == ' ' || *prop_name == '\t'))
                 prop_name++;
-            
+
             // pr_info("%s: Parsed path: '%s'\n", PATCH_TAG, path);
             // pr_info("%s: Property name: '%s'\n", PATCH_TAG, prop_name);
-            
+
             ret = remove_dt_property(path, prop_name);
             kfree(dup);
             return ret;
@@ -700,40 +700,40 @@ static int __init patch_device_tree(const char *input)
                 kfree(dup);
                 return -EINVAL;
             }
-            
+
             *space_pos = '\0';
             path = op_input;
             value = space_pos + 1;
-            
+
             while (*value && (*value == ' ' || *value == '\t' || *value == '\n'))
                 value++;
-            
+
             if (*value == '\0') {
                 pr_err("%s: Empty value for create property operation\n", PATCH_TAG);
                 kfree(dup);
                 return -EINVAL;
             }
-            
+
             prop_name = strrchr(path, '/');
             if (!prop_name || prop_name == path) {
                 pr_err("%s: Invalid path format for create property: '%s'\n", PATCH_TAG, path);
                 kfree(dup);
                 return -EINVAL;
             }
-            
+
             *prop_name = '\0';
             prop_name++;
-            
+
             // pr_info("%s: Parsed path: '%s'\n", PATCH_TAG, path);
             // pr_info("%s: Property name: '%s'\n", PATCH_TAG, prop_name);
             // pr_info("%s: Property value: '%s'\n", PATCH_TAG, value);
-            
+
             ret = create_dt_property(path, prop_name, value);
             kfree(dup);
             return ret;
         }
     }
-    
+
     /* Existing modify property operation */
     space_pos = strchr(dup, ' ');
     if (!space_pos) {
@@ -741,16 +741,16 @@ static int __init patch_device_tree(const char *input)
         kfree(dup);
         return -EINVAL;
     }
-    
+
     /* Split at the space */
     *space_pos = '\0';
     path = dup;
     value = space_pos + 1;
-    
+
     /* Skip leading whitespace in value */
     while (*value && (*value == ' ' || *value == '\t' || *value == '\n'))
         value++;
-    
+
     // pr_info("%s: Parsed path: '%s'\n", PATCH_TAG, path);
     // pr_info("%s: Parsed value: '%s'\n", PATCH_TAG, value);
 
@@ -767,11 +767,11 @@ static int __init patch_device_tree(const char *input)
         kfree(dup);
         return -EINVAL;
     }
-    
+
     /* Split path and property name */
     *prop_name = '\0';
     prop_name++;
-    
+
     // pr_info("%s: Node path: '%s'\n", PATCH_TAG, path);
     // pr_info("%s: Property name: '%s'\n", PATCH_TAG, prop_name);
 
@@ -791,7 +791,7 @@ static int __init patch_device_tree(const char *input)
         kfree(dup);
         return -EINVAL;
     }
-    
+
     // pr_info("%s: Found property '%s', current length: %d\n", PATCH_TAG, prop_name, prop->length);
 
     // 检查是否为十六进制字节数组格式
@@ -828,17 +828,17 @@ static int __init patch_device_tree(const char *input)
     } else {
         /* Determine if this is a string value or numeric value */
         is_string_value = !is_numeric_value(value);
-        
+
         if (is_string_value) {
             /* Handle as string value */
             size_t str_len = strlen(value);
             size_t final_len = str_len + 1;  /* Include null terminator */
-            
+
             // pr_info("%s: Treating value as string (len=%zu)\n", PATCH_TAG, str_len);
-            
+
             /* Save old value and update property */
             old_value = prop->value;
-            
+
             prop->value = kzalloc(final_len, GFP_ATOMIC);
             if (!prop->value) {
                 pr_err("%s: Failed to allocate memory for string value\n", PATCH_TAG);
@@ -847,11 +847,11 @@ static int __init patch_device_tree(const char *input)
                 kfree(dup);
                 return -ENOMEM;
             }
-            
+
             /* Copy the string value */
             memcpy(prop->value, value, str_len);
             prop->length = final_len;
-            
+
             // pr_info("%s: Patched %s/%s to string '%s' (len=%zu)\n", PATCH_TAG, path, prop_name, value, final_len);
         } else {
             /* Handle as numeric value - parse the numbers */
@@ -867,10 +867,10 @@ static int __init patch_device_tree(const char *input)
 
             /* Save old value and update property */
             old_value = prop->value;
-            
+
             /* If the parsed length is smaller than original, pad with zeros */
             final_len = max(bin_len, (size_t)prop->length);
-            
+
             prop->value = kzalloc(final_len, GFP_ATOMIC);  /* kzalloc zeros the memory */
             if (!prop->value) {
                 pr_err("%s: Failed to allocate memory for numeric value\n", PATCH_TAG);
@@ -880,7 +880,7 @@ static int __init patch_device_tree(const char *input)
                 kfree(dup);
                 return -ENOMEM;
             }
-            
+
             /* Copy the parsed data */
             memcpy(prop->value, bin_value, bin_len);
             prop->length = final_len;
@@ -910,7 +910,7 @@ static int __init patch_device_tree(const char *input)
                     // pr_info("%s: Patched %s/%s to binary data (%zu bytes)\n", PATCH_TAG, path, prop_name, bin_len);
                 }
             }
-            
+
             /* Clean up numeric value buffer */
             kfree(bin_value);
         }
@@ -946,7 +946,7 @@ static int __init patch_device_tree(const char *input)
             }
         }
         else { // numeric value
-            u8 *val = (u8 *)prop->value;
+            // u8 *val = (u8 *)prop->value;
             // pr_info("%s: Verification - first byte: 0x%02x, length: %d\n", PATCH_TAG, val[0], prop->length);
         }
     }
@@ -961,14 +961,14 @@ static int __init overwrite_config_init(void)
 {
     // char *device_name = get_property_from_cmdline("oplusboot.prjname");
     // char *enable = get_property_from_cmdline("overwrite.enable");
-    
+
     const struct overwrite_config_group *common_group = NULL;
     // const struct overwrite_config_group *device_group = NULL;
 
     // 第一遍遍历：找到 common 组和当前设备对应的组
     for (int i = 0; i < overwrite_config_group_count; i++) {
         const struct overwrite_config_group *group = &overwrite_config_groups[i];
-        
+
         if (strcmp(group->prefix, "common") == 0) {
             common_group = group;
             break;
