@@ -209,7 +209,7 @@ CONFIG_MALI_PLATFORM_NAME ?= "devicetree"
 # Kconfig passes in the name with quotes for in-tree builds - remove them.
 MALI_PLATFORM_DIR := $(shell echo $(CONFIG_MALI_PLATFORM_NAME))
 
-include $(KO_CODE_PATH)/platform/$(MALI_PLATFORM_DIR)/Kbuild
+include $(KO_CODE_PATH)/platform/mt6895/Kbuild
 
 ifeq ($(CONFIG_MALI_CSF_SUPPORT),y)
     MALI_JIT_PRESSURE_LIMIT_BASE = 0
